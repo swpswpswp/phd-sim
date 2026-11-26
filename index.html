@@ -452,6 +452,10 @@ html[data-theme="dark"] .mg-dialog,body[data-theme="dark"] .mg-dialog {
 .mg-tape-track{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin:4px 0 10px}
 .mg-tape-track i{background:#3e5559;border-block:3px dotted #9caaa0;color:#e5e6d4;text-align:center;padding:3px 0;font:650 .72rem/1.3 ui-monospace,monospace}
 .mg-tape-track i.action{background:#e2b668;color:#2e3231}.mg-tape-track i.onset{background:#9acce0;color:#273a3d}.mg-tape-track i.needle{outline:2px solid #fcf0cd;outline-offset:-1px}
+@media (prefers-reduced-motion: no-preference) {
+  .play-li-prose > p { animation: li-line-in 220ms ease-out both; animation-delay: calc(var(--prose-line) * 75ms); }
+  @keyframes li-line-in { from { opacity: 0; transform: translateY(0.2rem); } }
+}
 </style>
 </head>
 <body>
@@ -34780,6 +34784,275 @@ globalThis.ResearchScene = (() => {
 ;
 // Each object, promise and choice belongs to a particular adult. Only recorded
 // invitations open a date. Academic choices never enter this module.
+/* Li Xu's route runs through the sixteen relationship slots in Love First. */
+const LiStory=(()=>{
+  const p=(zh,en)=>[zh,en];
+  const id='senior-w';
+  const title=p('仅供参考 · 许栗','For Reference Only · Li Xu');
+  const available=(s,ctx)=>s.storyRevision===2&&s.lifeMode==='love'&&s.year===1&&ctx.index===0;
+  const tagged=(s,tag)=>s.life.tags.includes('li-'+tag);
+  const active=(s,person)=>s.storyRevision===2&&person?.id===id&&tagged(s,'entry')&&!tagged(s,'exit');
+  const choice=(key,label,result,life={},extra={})=>({id:'li-'+key,label,result,life,effects:{},...extra});
+  const mark=(tag,change={})=>({tag:'li-'+tag,...change});
+  const merge=(a,b)=>a.map((v,i)=>v+'\n\n'+b[i]);
+  const sounds={pot:'kitchen',elevator:'lift',kiss:'kitchen',walk:'rain'};
+  const chapter=(key,art,name,body,choices)=>({id:'li-'+key,artKey:art,title:name,body,choices,kicker:title,sound:sounds[key]});
+  const next=(label,result)=>choice('next',label,result);
+  const endings={
+    'li-tickets':{name:p('这次我去找你','My turn to come to you'),desc:p('许栗去外地上班，你留在墨尔本。第一张票是你买的，第二张是她买的。她把各自的日期记好，问你周五到站想吃什么。','Li takes the job away. You stay in Melbourne. You buy the first ticket, she buys the second. With both dates in her diary, she asks what you want to eat when you get in on Friday.')},
+    'li-last-dinner':{name:p('把这一锅吃完','One last pot'),desc:p('锅里最后一只饺子破了。许栗给你盛了半碗汤，你们坐着把它喝完。走的时候你敲了两下门框。她抬起头，跟你说再见。','The last dumpling breaks. Li ladles you half a bowl of broth and you finish it sitting together. On your way out you knock twice on the doorframe. She looks up and says goodbye.')},
+    'li-coauthors':{name:p('作者栏里的两个人','Two names on the paper'),desc:p('文章上线那天，许栗把链接发给你。对话框里「正在输入」亮了两次。最后她只发来两个字：「恭喜。」','When the paper goes live, Li sends you the link. The typing indicator appears twice. In the end all she sends is “Congratulations.”')}
+  };
+
+  function kitchen(){
+    return chapter('pot','kitchen',p('锅洗得挺干净','You washed it well'),p(
+      '许栗在门上贴了张纸：「锅烧着，听不见手机。请敲门。」你敲了两下。她腾不出手，拿胳膊肘顶开门。\n\n你把汤锅端到台面上，锅底露出「仅供参考」四个字。许栗扶着你的小臂，伸手够你身后的碗。指尖碰到碗沿，她才收回手。\n\n「锅洗得挺干净。下周还来吗？锅不用带。」',
+      'A note on Li’s door says, “Can’t hear the phone over the stove. Knock.” You knock twice. She opens the door with an elbow.\n\nYou set down the pot. FOR REFERENCE ONLY is written under it. Li rests a hand on your forearm as she reaches for a bowl behind you. She only moves her hand when she has the bowl.\n\n“You washed it well. Coming next week? You can leave the pot at home.”'),[
+      choice('call-it-a-date',p('问她，这算约会吗？','Ask if she means a date'),p('许栗把冰箱上的企鹅挪到周四。「我本来想等汤开了再问。算。」','Li moves the fridge penguin to Thursday. “I was going to wait for the water to boil. Yes.”'),{status:'dating',bond:3}),
+      choice('let-her-ask',p('答应再来，问她要不要加一副碗筷','Say yes and ask if she needs an extra place setting'),p('「两副刚好。」她把第二只碗放到你手边。「我是在约你。听出来了吗？」','“Two is just right.” She sets the second bowl beside your hand. “I’m asking you out. Did you get that?”'),{status:'dating',bond:3}),
+      choice('stay-friends',p('告诉她，你想和大家一起吃','Say you would rather come to a group dinner'),p('她点头，把邀请改发到合租屋群里。临走仍给你装了一碗汤。','She nods and moves the invitation to the house chat. She still packs you a bowl of soup.'),mark('exit',{status:'friends',tags:['friends-by-choice-'+id]}))
+    ]);
+  }
+
+  function elevator(){
+    return chapter('elevator','studio',p('电梯到一楼的时候','When the lift reaches the ground floor'),p(
+      '今晚你们赶完了合写稿的第一轮修改。作者栏里的两个名字后面，各有一颗一样的星。许栗合上电脑，说她看中了外地的一个博后岗位。\n\n等电梯时，她把家里的备用钥匙塞到你拿着电脑的手里。「周四你先到，就自己进去。」她牵起你空着的那只手。门一开，她立刻松开了。出来的是同门，手里还提着没扔的外卖盒。\n\n「你俩怎么还没走？」',
+      'Tonight you finish the first round of revisions on your shared paper. In the author list, both names have the same asterisk. Li closes her laptop and says she has her eye on a postdoc out of town.\n\nAt the lift she slips her spare house key into the hand holding your laptop. “If you get there first Thursday, let yourself in.” She takes your free hand. When the doors open she lets go. A labmate steps out holding an empty takeaway box.\n\n“You two still here?”'),[
+      choice('ask-about-the-hand',p('等人走了，问许栗刚才为什么松手','Wait until you are alone and ask why she let go'),p('「我怕他们以后看见我们合写的东西，第一句问的是谁在照顾谁。」她顿了顿，「可我也挺喜欢只有我们知道。」','“I’m afraid the first thing they’ll ask about anything we write together is who did the other a favour.” She pauses. “And I kind of like that only we know.”'),mark('talked-hand',{bond:2})),
+      choice('let-the-hand-go',p('先和同门打招呼，把话留到下次','Greet your labmate and save the question for later'),p('玻璃门外风很大。你们把手各自揣回衣兜里。到站时她发来一句：「周四还来吗？」','Outside, the wind is sharp. You each put your hands in your own pockets. At the stop your phone lights up: “Still coming Thursday?”'))
+    ]);
+  }
+
+  function kiss(s){
+    const reply=tagged(s,'talked-hand')?p('「组里的事，我们可以再商量。刚才在路上我就想牵你。」','“We can keep talking about the lab. I wanted to hold your hand all the way here.”'):
+      p('「上次在楼下，我松手太快了。」','“I let go too quickly downstairs last time.”');
+    return chapter('kiss','kitchen',p('这回她等你握住','This time she waits'),merge(p(
+      '她用漏勺捞起一只饺子，皮破了，馅还在锅里。\n\n「你包的。」\n「你怎么知道？」\n「我包的早散了。」\n\n她伸手关火，抽油烟机还响着。导师发来一条消息。许栗看了一眼，把手机翻过去。',
+      'She scoops out a dumpling. The wrapper has split. The filling is still in the pot.\n\n“Yours.”\n“How can you tell?”\n“Mine fell apart ages ago.”\n\nShe turns the heat off. The extractor is still running. A message comes in from the supervisor. Li glances at it and turns her phone face down.'),merge(reply,p(
+      '她把小指勾过来，这次等你握住。\n\n「我现在想亲你。可以吗？」','She hooks her little finger towards yours. This time she waits for you to take it.\n\n“I want to kiss you now. Can I?”'))),[
+      choice('lean-in',p('凑过去亲她','Lean in and kiss her'),p('她偏了一下头。你想往后退一点，她却笑了，拇指擦过你的手背，又亲了你一下。锅盖上的水正往下滴。','She tilts her head. You begin to draw back, but she smiles, brushes her thumb over the back of your hand and kisses you again. Water drips from the lid.'),mark('kissed',{bond:3}),{op:'liContinue'}),
+      choice('hold-hands',p('说想再牵一会儿','Ask to hold hands a little longer'),p('「好。」她把手掌摊开。你们靠着台面站了一会儿，直到锅里的水声停下来。','“Okay.” She opens her palm. You stand against the counter together until the water in the pot quiets.'),mark('held',{bond:3}),{op:'liContinue'}),
+      choice('ask-about-tomorrow',p('问她明天见到同门还会不会松手','Ask what she will do when you see your labmates tomorrow'),p('「在组会上我们先是作者。散会以后，要是你也愿意，我就牵着你一起出去。」她指尖还停在原处，等你自己决定。','“In the meeting we’re coauthors first. Afterwards, if you like, I’ll walk out holding your hand.” Her fingers stay where they are while you decide.'),mark('agreed-open',{bond:2}),{op:'liContinue'})
+    ]);
+  }
+
+  function byline(s){
+    const line=tagged(s,'kissed')?p('「有件事我昨晚亲你以前就该说。」','“There’s something I should have told you before I kissed you.”'):
+      tagged(s,'held')?p('「昨晚你握着我的手，我一直想开口。」','“You were holding my hand last night. I kept trying to tell you.”'):
+      p('「我昨晚说在组会上我们是作者。就是那时候，我该把邮件给你看。」','“Last night I said we were coauthors in the meeting. That was when I should have shown you the email.”');
+    return chapter('byline','studio',p('你的名字后面少了一颗星','The asterisk beside your name is gone'),merge(p(
+      '第二天组会，导师投出准备投稿的新稿。许栗名字后面的星号还在，你的没了。页脚原本是「同等贡献」，现在只留了通讯作者的邮箱。\n\n你侧过屏幕给许栗看。她的手还停在翻页键上，压低了声音。',
+      'The next day, the supervisor projects the submission draft. Li still has an asterisk after her name. Yours is gone. The equal-contribution note has been replaced by the corresponding author’s email.\n\nYou angle your screen towards her. Her hand stays on the arrow key. She lowers her voice.'),line),[
+      choice('raise-at-meeting',p('请导师先停在这一页，当场要求核对贡献','Ask the supervisor to stop on this page and review who did what'),p('你说完以后，许栗才抬头，对着在场的人说：「昨晚那封邮件，是我回的。先别投。」','Only after you speak does Li look up. “I answered that email last night,” she tells the room. “Hold the submission.”'),mark('public-review',{strain:5}),{op:'liContinue'}),
+      choice('written-review',p('散会后发版本记录，约共同作者一起谈','Send the version history after the meeting and arrange a discussion'),p('你在邮件里附上最早的作者页和分工表。许栗第一个回复全组：「先暂停投稿。我昨晚答复过，应该把完整邮件给你们看。」','You attach the first title page and the contribution table. Li is first to reply all: “Please hold the submission. I answered last night, and you should see the whole thread.”'),mark('written-review',{strain:5}),{op:'liContinue'})
+    ]);
+  }
+
+  function door(){
+    return chapter('door','kitchen',p('晚上，门还给你留着','The door is still open to you'),p(
+      '许栗发来消息，说她昨晚已经答应改署名。外地那个博后岗位快截止了，导师说统一由她一作，这周就能投。她还没拿到面试，只想赶在截止之前把「准备投稿」改成「已投稿」。\n\n你打给她，问：「你昨晚本来打算什么时候告诉我？」\n\n电话那头静了很久。「投完以后。」她说。「我以为那时候你再生气，也来不及改了。」',
+      'Li texts that she agreed to the byline change last night. The postdoc deadline is close. The supervisor said the paper could go out this week with her as sole first author. She does not have an interview yet. She just wanted to change “in preparation” to “submitted” before the deadline.\n\nYou call. “When were you going to tell me?”\n\nA long silence. “After we submitted,” she says. “I thought by then you could be angry with me and it would still be too late to change it.”'),[
+      choice('go-to-her',p('去她家，把话当面说完','Go to her place and finish the conversation face to face'),p('许栗手里还拿着漏勺。你在最靠门的椅子上坐下，把她伸过来的手轻轻推回去。她把邮件打开，给你看完整来回。走之前你说：「稿子继续改。我们先停一下。」','Li is still holding the slotted spoon. You sit near the door and gently push away her reaching hand. She opens the complete email thread. Before you leave, you tell her, “We can finish the paper. I need a break from us.”'),mark('door-open',{status:'separated'})),
+      choice('keep-space',p('今晚不见面，约好明天只谈稿子','Stay away tonight and arrange to discuss the paper tomorrow'),p('你把备用钥匙装进信封，第二天放到她桌上。她拿起来时没问你什么时候再来。','You put the spare key in an envelope and leave it on her desk the next day. When she picks it up, she does not ask when you are coming back.'),mark('key-returned',{status:'separated'}))
+    ]);
+  }
+
+  function correction(s){
+    const opening=tagged(s,'public-review')?p('组会那一页一直留在共享盘的演示文稿里。','The slide you stopped on is still in the shared deck.'):
+      p('你发的版本记录还在邮件的第一封。','The version history you sent is still at the top of the thread.');
+    return chapter('correction','studio',p('两颗星都要有人签字','Two asterisks, two signatures'),merge(opening,p(
+      '共同作者把分析记录、图稿和修改历史摊开，确认两人应是共同一作。许栗自己写了更正，把新稿发给所有作者。到你签字时，她没有催。',
+      'The coauthors review the analysis, figures and revision history. The work merits joint first authorship. Li writes the correction herself and sends the new draft to everyone. When it is your turn to sign, she does not rush you.')),[
+      choice('sign-together',p('核对作者页和分工，批准这版投稿','Check the author page and contributions, then approve submission'),p('你打开准备上传的那份 PDF，两个名字后面都有星。你们在同一封邮件里确认了这一版。','You open the PDF that will actually go up. Both names have a star. You confirm this version on the same thread.'),mark('signed')),
+      choice('verify-first',p('请另一位共同作者核对最终文件，再签','Ask another coauthor to check the final file before you sign'),p('你等到第三个人把文件名和作者页抄进邮件才签。许栗回了一句「收到」，用的是全组邮件。','You wait until a third author quotes the filename and title page before signing. Li replies, “Received,” on the group thread.'),mark('verified'))
+    ]);
+  }
+
+  function corridor(s){
+    const returned=tagged(s,'key-returned');
+    return chapter('corridor','studio',p('以后在这里怎么打招呼','How do we say hello here?'),p(
+      '电梯又在一楼打开。许栗这次没装作在看手机。她往旁边让了让，问：「大家都在的时候，以后我应该怎么跟你打招呼？」',
+      'The lift opens on the ground floor again. This time Li does not pretend to look at her phone. She moves aside. “How should I say hello when everyone is around?”'),[
+      choice('say-hello',p('照常打招呼，工作讲完再谈私事','Say hello as usual and save private things for afterwards'),p('她点头，看着你的眼睛叫了一次你的名字，像是在练习最简单的一句话。','She nods and says your name to your face, like practising the simplest line in the world.'),mark('hello')),
+      choice('keep-it-collegial',p('在组里先只聊工作','Keep things to work in the lab for now'),returned?p('「好。」她把电梯门按住，让你和后面的人先进去。','“Okay.” She holds the doors so you and the people behind you can get in.'):
+        p('「好。这个我听得懂。」她把电梯门按住。在这件事上，你终于不用说第二遍。','“Okay. I understand that.” She holds the lift. This time you do not have to say it twice.'),mark('collegial'))
+    ]);
+  }
+
+  function reply(){
+    return chapter('review','studio',p('审稿人问起那张图','A reviewer asks about the figure'),p(
+      '返修意见到了。审稿人问的正好是你做的那张图。许栗在共享文档里留了一个空着的回复框，只写了一行：「这张图请你来答。我可以帮你核数字。」',
+      'The reviews arrive. One reviewer asks about the figure you made. Li leaves a blank reply box in the shared document: “Could you answer this one? I can check the numbers.”'),[
+      next(p('写完回复，请她核对那列数字','Write the reply and ask her to check the column'),p('她只圈出一个小数点。上传之前，邮件里有你们两人的确认。','She circles one decimal point. Both of you confirm before the files go up.')),
+      choice('review-with-group',p('把回复发给全组，请大家一起核','Send the reply to the full author group for checking'),p('两个人各留了一条批注。她把你写的解释原样留在最终的回复里。','Two authors leave one comment each. She keeps your explanation as you wrote it in the final response.'))
+    ]);
+  }
+
+  function deadline(){
+    return chapter('deadline','studio',p('申请表上有个空格','A blank on the application form'),p(
+      '许栗把博后申请最后一页发给你。稿件一栏填的是「已投稿，共同一作」。她说：「这个版本我自己负责。还有一项，合作人电话，你愿意让我填你的吗？」',
+      'Li sends the last page of her postdoc application. The paper is listed as “submitted, joint first author.” She says, “I’ll answer for this version myself. There’s one more blank. Would you let me list you as a collaborator they can call?”'),[
+      next(p('可以，让他们有问题直接问我','Let the panel contact you directly'),p('她把你给的号码填上，把提交回执发给了你。','She enters the number you give her and sends you the submission receipt.')),
+      choice('decline-contact',p('请她另找推荐人，你们按作者身份合作','Ask her to find another referee and keep your work as coauthors'),p('许栗删了那一行。她另约了一位老师，没有把这件事带进下一封稿件邮件。','Li deletes the line and arranges a separate referee. It does not come up in the next email about the paper.'))
+    ]);
+  }
+
+  function coffee(){
+    return chapter('coffee','tram',p('车站边有十分钟','Ten minutes by the tram stop'),p(
+      '许栗在电车站旁等你，手上只买了一杯。「我今天没有替你点。你要是不想坐，我就自己回去。」她告诉你，外地的面试约下来了。',
+      'Li is at the tram stop with one cup. “I didn’t order for you. If you don’t want to sit down, I’ll go home.” She tells you the interview out of town is booked.'),[
+      choice('sit-for-coffee',p('坐十分钟，问问她为什么想去那边','Sit for ten minutes and ask why she wants the job'),p('她讲起那边能做的一项研究，讲完才说：「我知道这不是把稿子改回去就能过去的事。」你们都听见了进站铃，谁也没急着起来。','She tells you about work she could do there, then adds, “I know putting the author page back doesn’t make this go away.” You hear the tram bell. Neither of you rushes to stand.'),mark('coffee-open',{strain:-3})),
+      choice('pass-this-time',p('祝她面试顺利，搭这班车回去','Wish her luck and take this tram'),p('她往后退了一步，好让你刷卡。上车以后，你隔着玻璃看见她还在原地。','She steps back so you can tap in. From the tram you see her still standing there.'),mark('coffee-declined'))
+    ]);
+  }
+
+  function interview(){
+    return chapter('interview','studio',p('她把你的那一页留在报告里','Your slide stays in the talk'),p(
+      '许栗把面试报告发给你，只请你看合写稿的那一页。标题下面是你们两个的名字。讲稿里，她用一句话交代哪部分是你做的。',
+      'Li sends you her interview deck and asks you to look at the one slide about the paper. Both names are beneath the title. In her notes she has a line explaining which part was yours.'),[
+      next(p('告诉她，那句照这样讲就行','Tell her to keep that line as it is'),p('面试后来追问那项分析。她说是你设计的，自己能讲清怎么用，问题要是再深，可以请你来答。','The panel asks about the analysis. She says it was your design. She can explain how she used it and can put them in touch with you for anything deeper.')),
+      choice('ask-for-correction',p('把那句贡献说明改准确，发回给她','Make the contribution statement more precise and send it back'),p('许栗照你发去的分工说了。面试结束，只给你回了句「那页是照你确认的版本讲的」。','Li uses the wording you send. After the interview she texts, “I presented that slide the way you approved it.”'))
+    ]);
+  }
+
+  function invitation(){
+    return chapter('invitation','kitchen',p('她把日期写在另一张纸上','She writes the date on a separate slip'),p(
+      '期刊来信说修改稿可以接受。许栗把信转发到全组，隔了十分钟才单独给你发消息：「想不想再吃顿饭？我欠你一句完整的道歉。」她给了两个时间，说你都可以拒绝。',
+      'The journal accepts the revised paper. Li forwards the email to the whole group. Ten minutes later she texts you separately: “Would you have dinner with me again? I owe you a proper apology.” She gives you two times and says you can turn down both.'),[
+      choice('hear-her-out',p('选一个时间，告诉她你愿意听','Pick a time and say you are willing to hear her out'),p('去之前她问你愿不愿意让她抱一下。你点头。她抱得很轻，先松开了手，然后说：「我怕那份工作拿不到，但那不是你的责任。我也不该让我喜欢你这件事，帮我把别的话藏起来。」','Before you sit, she asks if she can hug you. You nod. She holds you lightly and lets go first. “I was scared I wouldn’t get the job. That wasn’t yours to fix. And liking you gave me no right to hide the rest.”'),mark('heard-apology',{strain:-4})),
+      choice('request-an-email',p('今晚不见，请她把话写下来','Decline dinner and ask her to write it down'),p('她发来两段话。末尾没有问你是否原谅，也没有再定时间。','She sends two paragraphs. She ends without asking for forgiveness or another date.'),mark('apology-written',{status:'separated'}))
+    ]);
+  }
+
+  function offer(){
+    return chapter('offer','tram',p('她拿到了那份工作','She got the job'),p(
+      '博后的聘书到了。许栗把邮件转给你，然后发来一张周五的时刻表。她说，这次收到消息后的第一件事，就是告诉你。\n\n你把手机往下滑。她还没有买票。',
+      'The postdoc offer arrives. Li forwards the email and then a Friday timetable. She says the first thing she did after getting the news was tell you.\n\nYou scroll down. She has not bought a ticket yet.'),[
+      next(p('问她自己有多想去','Ask how much she wants the job'),p('「很想。」她这回答得很快。「我想去，也想知道你怎么打算。不用现在回答我。」','“A lot.” This time she answers quickly. “I want to go. I also want to hear what you want. You don’t have to tell me now.”')),
+      choice('ask-for-date',p('问她什么时候动身，自己先看看日历','Ask when she leaves and check your own diary first'),p('她发来报到日期。你发现自己也刚好有一份东西要在那周交。','She sends her start date. You realise you have something due the very same week.'))
+    ]);
+  }
+
+  function calendar(){
+    return chapter('calendar','studio',p('你自己的日期也在这张纸上','Your dates belong on the page too'),p(
+      '桌上摊着你的论文时间表和她的入职日历。许栗问如果试异地，第一趟谁去找谁。两页纸叠到一起，最上面那格刚好是你的评审周。',
+      'Your thesis timetable is open beside her start dates. Li asks who would travel first if you tried long distance. In the overlapping calendars, the first possible date is your review week.'),[
+      choice('name-real-dates',p('先圈出自己要留在学校的日子，再一起找车次','Mark the dates you need to be on campus, then look for trains together'),p('她把那一周划掉。你们找出各自能出门的一个周末，还把赶不上时由谁先打电话写了进去。','She crosses out that week. You each find a weekend you can travel and note who will call if the plans fall through.'),mark('real-dates')),
+      choice('make-no-promise',p('告诉她，眼下还给不了异地的承诺','Tell her you cannot promise long distance right now'),p('许栗把笔放下。你们关掉购票页面，先各自留着自己的安排。','Li puts down her pen. You close the booking page and keep your plans for yourselves.'),mark('no-dates'))
+    ]);
+  }
+
+  function keys(s){
+    return chapter('keys','kitchen',p('门边那只钥匙碟','The key dish by the door'),tagged(s,'key-returned')?p(
+      '你敲了两下，许栗才来开门。那只装着备用钥匙的信封还在碟子里。「你还记得怎么敲。」她说。',
+      'You knock twice before Li opens the door. The envelope with the spare key is still in the dish. “You remember how to knock,” she says.'):p(
+      '你摸到口袋里的备用钥匙，最后还是敲了两下门。许栗在里面问：「是你吗？」你说是。她等水关了才来开门。',
+      'You feel the spare key in your pocket, then knock twice anyway. From inside Li asks if that is you. You say yes. She turns off the tap before opening the door.'),[
+      next(p('进屋坐一会儿','Come in and sit for a while'),p('她把最靠门的椅子拉出来，又往中间挪了半步。你自己选了坐哪儿。','She pulls out the chair nearest the door and nudges it half a step in. You decide where to sit.')),
+      choice('talk-outside',p('在楼下走一圈再说','Take a walk downstairs first'),p('你们经过第一次见面那扇门的楼下窗户。屋里有人做饭，没有人伸手牵谁。','You pass the kitchen window below the door where you first met. Someone is cooking. Neither of you reaches for the other’s hand.'))
+    ]);
+  }
+
+  function goodbye(s){
+    const choices=[];
+    if(tagged(s,'heard-apology')&&tagged(s,'real-dates')){
+      choices.push(choice('try-again',p('说想重新开始，把两次见面的日期订下来','Say you want to try again and book both dates'),p('许栗问：「这次我可以牵你吗？」你把手伸过去。两张车票分开下单，各自的手机响了一声。','“Can I hold your hand this time?” Li asks. You reach for her. You book the tickets separately, and each phone chimes once.'),mark('finished',{status:'committed',ending:'li-tickets',bond:4})));
+    }
+    if(tagged(s,'heard-apology')||tagged(s,'coffee-open')){
+      choices.push(choice('last-meal',p('和她吃完最后一顿饭，各自去下一站','Finish one last dinner, then go your separate ways'),p('你告诉她你已经不想再吵那一页。她听完，拿漏勺给你盛了最后一只。走的时候，她没有问你下周还来不来。','You tell her you no longer want to fight over that page. She listens, then lifts the last dumpling into your bowl. When you leave, she does not ask if you are coming next week.'),mark('finished',{status:'separated',ending:'li-last-dinner'})));
+    }
+    choices.push(choice('paper-only',p('以后只联系稿件的事','Keep in touch only about the paper'),p('许栗把准备发给你的时刻表合上，问文章上线时能不能把链接发给你。你说可以。','Li closes the timetable she was about to send. She asks if she can send you the paper when it goes live. You say yes.'),mark('finished',{status:'separated',ending:'li-coauthors'})));
+    return chapter('goodbye','kitchen',p('锅底还写着仅供参考','For Reference Only is still on the pot'),p(
+      '许栗明天动身。她把锅摆回你头一回还锅的位置，锅沿还是旧的那处磕痕。桌上有两只碗。她问：「你要是愿意，今天就在这儿把话说完。」',
+      'Li leaves tomorrow. She sets the pot where you put it the first time, the old dent still in the rim. There are two bowls. “If you want,” she says, “we could finish talking here.”'),choices);
+  }
+
+  function walk(){
+    return chapter('walk','tram',p('最后一趟不用赶','The tram can wait'),p('电车站前又下起雨。许栗问你，下周动身前，要不要在当初那张桌子见一面。','It is raining at the tram stop again. Li asks whether you want to meet at that same table before she leaves next week.'),[
+      next(p('答应去厨房，约好时间再来','Agree to the kitchen and fix a time'),p('她把时间记下来，收起手机。你们各自搭了车。','She notes the time and puts her phone away. You each take your tram.')),
+      choice('just-talk',p('只答应见一面，把话说清楚','Agree to meet and talk things through'),p('她把时间记下来，说会把锅留在灶上。吃不吃，到时你自己定。','She notes the time and says she’ll leave the pot on the hob. Whether you eat is up to you.'))
+    ]);
+  }
+
+  const chapters={
+    1:[['pot',kitchen],['elevator',elevator],['kiss',kiss],['byline',byline],['door',door]],
+    2:[['correction',correction],['corridor',corridor],['deadline',deadline],['review',reply]],
+    3:[['invitation',invitation],['coffee',coffee],['interview',interview],['offer',offer]],
+    4:[['calendar',calendar],['keys',keys],['walk',walk],['goodbye',goodbye]]
+  };
+  function scene(s){
+    const chapter=chapters[s.year].find(([key])=>!s.life.history.some(h=>h.scene==='li-'+key));
+    return chapter?.[1](s)||null;
+  }
+
+  function clash(s){
+    return chapter('proofs','studio',p('今晚有两封要回的邮件','Two emails to answer tonight'),p(
+      '编辑要你们在今晚核对排版样张。你的年度评审材料也到了整理的时候。许栗发来两张截图，第一张是图，第二张是作者页。她问：「我可以等你明早核完再回编辑。你自己的时间还够吗？」',
+      'The editor wants the proofs checked tonight. Your annual review material also needs sorting. Li sends two screenshots: the chart and the title page. “I can ask the editor to wait until you’ve checked tomorrow morning. Do you still have time for your own work?”'),[
+      choice('protect-review',p('先做评审材料，请她向编辑确认能否等到明天','Do the review work first and ask her to confirm the deadline'),p('她问过编辑，把延到明早的答复转给你。你留住了今晚。第二天，她等你确认过才回信。','She forwards the editor’s approval for the morning. You keep the evening. The next day she waits for your confirmation before replying.'),{}, {effects:{health:2}}),
+      choice('read-tonight',p('今晚一起核对，给自己的材料留出另一段时间','Check the proofs together tonight and schedule your own work separately'),p('你们把作者页和图一起核了。临走，她帮你把最后一间还空着的自习室门牌记下来。','You check the title page and the chart together. On the way out she notes the number of the last study room still free for you.'),{}, {effects:{health:-2}})
+    ]);
+  }
+
+  function coda(s,person){
+    const key=s.life.ending;
+    return active(s,person)&&Object.hasOwn(endings,key)?{id:key,key,...endings[key]}:null;
+  }
+  return {id,title,available,active,scene,clash,endings,coda};
+})();
+
+const SceneSound=(()=>{
+  const Audio=globalThis.AudioContext||globalThis.webkitAudioContext;
+  const profiles={kitchen:{frequency:175,hum:60,gain:.16},lift:{frequency:410,hum:104,gain:.11},rain:{frequency:2100,hum:0,gain:.23}};
+  let context,source=null;
+  function stop(){
+    if(!source)return;
+    source.stop();
+    source=null;
+  }
+  async function play(cue,onDone){
+    try{
+      context??=new Audio();
+      const {frequency,hum,gain}=profiles[cue];
+      const duration=3;
+      const rate=context.sampleRate;
+      const buffer=context.createBuffer(1,rate*duration,rate);
+      const samples=buffer.getChannelData(0);
+      for(let i=0;i<samples.length;i++){
+        const time=i/rate;
+        const motor=hum?Math.sin(2*Math.PI*hum*time)*.08:0;
+        samples[i]=(Math.random()*2-1)*.75+motor;
+      }
+      const filter=context.createBiquadFilter();
+      filter.type='lowpass';
+      filter.frequency.value=frequency;
+      const volume=context.createGain();
+      const playback=context.createBufferSource();
+      playback.buffer=buffer;
+      playback.connect(filter).connect(volume).connect(context.destination);
+      playback.onended=()=>{
+        if(source===playback)source=null;
+        playback.disconnect();
+        filter.disconnect();
+        volume.disconnect();
+        onDone();
+      };
+      const now=context.currentTime;
+      volume.gain.setValueAtTime(0,now);
+      volume.gain.linearRampToValueAtTime(gain,now+.3);
+      volume.gain.setValueAtTime(gain,now+duration-.6);
+      volume.gain.linearRampToValueAtTime(0,now+duration);
+      playback.start();
+      source=playback;
+      await context.resume();
+    }catch{
+      stop();
+      onDone();
+    }
+  }
+  return {supported:!!Audio,play,stop,get playing(){return !!source;}};
+})();
+
 globalThis.LifeEncounters=(()=>{
   'use strict';
   const p=line=>line.split('|');
@@ -34957,8 +35230,13 @@ globalThis.LifeEncounters=(()=>{
   }
   function meet(s,ctx){
     const choices=[];
+    const li=LiStory.available(s,ctx)?ctx.candidates.find(person=>person.id===LiStory.id):null;
+    if(li){
+      choices.push(option('meet-'+li.id,profiles[li.role].pitch.map((line,i)=>line+' · '+li.name[i]),p(introductions[li.id]),
+        {partner:li.id,status:'friends',tag:'met-'+li.id,tags:['li-entry']},{hint:LiStory.title}));
+    }
     for(const role of roles){
-      const pool=ctx.candidates.filter(person=>person.role===role&&!tag(s,'ended-'+person.id));
+      const pool=ctx.candidates.filter(person=>person.role===role&&person.id!==li?.id&&!tag(s,'ended-'+person.id));
       if(!pool.length)continue;
       const w=pool[ctx.roll('early-cast-'+role,pool.length)],spec=profiles[role];
       const label=spec.pitch.map((line,i)=>line+' · '+w.name[i]);
@@ -36707,7 +36985,8 @@ globalThis.Life=(()=>{
     const settled=(l.status==='single'&&!l.partner&&lastDirection?.tags?.includes('single-by-choice'))||
       (l.status==='friends'&&l.partner&&l.tags.includes('friends-by-choice-'+l.partner));
     const follow=['committed','married','separated'].includes(l.status)||l.partner===late?.seaPartner?.id||s.year>=3&&settled;
-    const card=follow?(late?.scene(s,ctx)||early?.scene(s,ctx)):(early?.scene(s,ctx)||late?.scene(s,ctx));
+    const li=LiStory.active(s,ctx.partner)?LiStory.scene(s):null;
+    const card=li||(follow?(late?.scene(s,ctx)||early?.scene(s,ctx)):(early?.scene(s,ctx)||late?.scene(s,ctx)));
     if(!card)throw Error('Missing relationship scene for '+l.status+' in year '+s.year);
     // Some later chapters take place away from a former partner who is still
     // on the record for childcare or a formal separation.
@@ -36739,8 +37018,12 @@ globalThis.Life=(()=>{
     }
     else if(s.step==='lifeClash'){
       const companion=['dating','committed','married'].includes(s.life.status)?ctx.partner:null;
-      const study=overseas(s,companion)?globalThis.LifeFutures.remoteClash(s,companion):globalThis.CompactStudy.crossroads(s,ctx);
-      card={...study,lifeScene:true,person:companion};
+      if(LiStory.active(s,ctx.partner)){
+        card={...LiStory.clash(s),lifeScene:true,person:ctx.partner};
+      }else{
+        const study=overseas(s,companion)?globalThis.LifeFutures.remoteClash(s,companion):globalThis.CompactStudy.crossroads(s,ctx);
+        card={...study,lifeScene:true,person:companion};
+      }
     }
     else if(['patronOffer','patronPlatform','patronAudit'].includes(s.step))card=globalThis.CompactStudy.patron(s,ctx);
     else if(s.step==='studyBlock'||s.step==='studyReview')card=globalThis.CompactStudy.scene(s,ctx);
@@ -36805,7 +37088,8 @@ globalThis.Life=(()=>{
   }
   function ending(s){
     if(!s.lifeMode)return {...single,causes:[]};
-    const ctx=context(s,()=>0),coda=globalThis.LifeFutures?.coda(s,ctx)||single;
+    const ctx=context(s,()=>0);
+    const coda=LiStory.coda(s,ctx.partner)||globalThis.LifeFutures?.coda(s,ctx)||single;
     const l=s.life,history=l.history,chosen=new Set();
     const choose=e=>{if(e)chosen.add(e);};
     const shared=history.filter(e=>l.partner&&(e.withId===l.partner||e.partner===l.partner&&e.previousPartner!==l.partner));
@@ -36828,7 +37112,7 @@ globalThis.Life=(()=>{
     return {...coda,id:coda.id||coda.key,key:coda.key||coda.id,causes};
   }
   return {modeNames,interestNames,statusNames,phaseNames,academicEndings,start,person,carePartner,overseas,overseasTerm,supervision,describe,academicContext,studyProgress,context,scene,record,ending,
-    get endings(){return globalThis.LifeFutures?.endings||{single};}};
+    get endings(){return {...(globalThis.LifeFutures?.endings||{single}),...LiStory.endings};}};
 })();
 
 ;
@@ -38616,7 +38900,9 @@ globalThis.Sim = (() => {
     for(const [key,val] of Object.entries(background?.effects||{})) if(key in start)start[key]=clamp(start[key]+val);
     const floodSlot=floodSlotFor(o);
     const life=Object.hasOwn(o,'lifeMode')?globalThis.Life.start(o):{};
-    return {version:2,storyRevision:1,copyRevision:1,pressureVersion:1,narrativeVersion:1,eventLibraryVersion:1,eventArcs:[],pressure:globalThis.Pressure.start(),...life,...(floodSlot!==null?{floodSlot}:{}),seed,name:(String(o.name??'水文章').trim()||'水文章').slice(0,80),gender:o.gender??'unspecified',school,field,...(field==='arts'?{direction:Object.hasOwn(fields.arts.directions,o.direction)?o.direction:'photo'}:{}),background:background?.id||'',year:1,turn:0,step:'offer',cursor:0,
+    // Existing journals opt into their own revision when replayed.
+    const storyRevision=Array.isArray(o.log)?o.storyRevision:2;
+    return {version:2,storyRevision,copyRevision:1,pressureVersion:1,narrativeVersion:1,eventLibraryVersion:1,eventArcs:[],pressure:globalThis.Pressure.start(),...life,...(floodSlot!==null?{floodSlot}:{}),seed,name:(String(o.name??'水文章').trim()||'水文章').slice(0,80),gender:o.gender??'unspecified',school,field,...(field==='arts'?{direction:Object.hasOwn(fields.arts.directions,o.direction)?o.direction:'photo'}:{}),background:background?.id||'',year:1,turn:0,step:'offer',cursor:0,
       pilotQuality:0,stats:start,yearStart:{...start},flags:background?.flag?[background.flag]:[],log:[],report:null,reports:[],ending:null,paper:null,papers:[],riskSources:[],
       seen:[],lastGroup:'',nextStory:null,resume:null,awarded:false,checkpoint:null,lastPanel:null,counters:{rejections:0,hearings:0,clinic:0,housing:0}};
   }
@@ -38999,6 +39285,7 @@ globalThis.Sim = (() => {
     switch(o.op){
       case 'arc':globalThis.EventArcs.record(s,card,o,entry);break;
       case 'patronHearing':break; // The next card at this slot is the independent hearing.
+      case 'liContinue':break; // The next scene takes place before the schedule advances.
       case 'compactRemedy':s.life.academic.remedyUsed=true;break;
       case 'compactExamLodge':s.life.academic.studyExam={lodged:o.id};break;
       case 'compactExamReply':s.life.academic.studyExam.reply=o.id;break;
@@ -39051,7 +39338,7 @@ globalThis.Sim = (() => {
       default:forward(s);
     }
     s.log.push(entry);
-    if(s.eventArcs&&globalThis.EventArcs&&!card.arc&&!s.ending)globalThis.EventArcs.discover(s,entry,anchorCursor,planFor(s),(tag,n)=>roll(s,tag,n));
+    if(s.eventArcs&&globalThis.EventArcs&&!card.arc&&!s.ending&&o.op!=='liContinue')globalThis.EventArcs.discover(s,entry,anchorCursor,planFor(s),(tag,n)=>roll(s,tag,n));
     checkCrisis(s);
     return s;
   }
@@ -39124,7 +39411,7 @@ globalThis.Sim = (() => {
   }
   function restoreSnapshot(s){
     try{
-      if(!s||s.version!==2||s.storyRevision!==1||s.eventLibraryVersion!==1||s.narrativeVersion!==1||s.pressureVersion!==1||s.copyRevision!==1||s.floodSlot!==0||typeof s.seed!=='string'||s.seed.length>120||typeof s.name!=='string'||!s.name.trim()||s.name.length>80||!Object.hasOwn(fields,s.field)||!Object.hasOwn(schools,s.school)||!Array.isArray(s.log)||s.log.length>300)return null;
+      if(!s||s.version!==2||![1,2].includes(s.storyRevision)||s.eventLibraryVersion!==1||s.narrativeVersion!==1||s.pressureVersion!==1||s.copyRevision!==1||s.floodSlot!==0||typeof s.seed!=='string'||s.seed.length>120||typeof s.name!=='string'||!s.name.trim()||s.name.length>80||!Object.hasOwn(fields,s.field)||!Object.hasOwn(schools,s.school)||!Array.isArray(s.log)||s.log.length>300)return null;
       if(!['he','she','they','unspecified','male','female','nonbinary','other'].includes(s.gender))return null;
       if(s.background&&!backgroundLookup(s.background))return null;
       if(Object.hasOwn(s,'lifeMode')&&(!Object.hasOwn(globalThis.Life.modeNames,s.lifeMode)||!Object.hasOwn(globalThis.Life.interestNames,s.interest)||!Object.hasOwn(s,'copyRevision')||s.floodSlot!==0||!s.life))return null;
@@ -40871,9 +41158,11 @@ globalThis.Previous = (() => {
     const localResource=loc(scene.projectInfo?.resource,lang);
     const resource=localResource?`<p class="play-project-stock">${escape(localResource)}</p>`:'';
     const dice=scene.dice?`<div class="play-dice"><strong>${a('这次掷骰会怎样影响结果？','Before you roll')}</strong>${translated(scene.dice.range,lang)}</div>`:'';
-    const body=scene.lifeScene?loc(scene.body,lang).split(/\n(?:\s*\n)?/).filter(Boolean).map(line=>`<p>${narrative(line,lang)}</p>`).join(''):narrative(scene.body,lang);
-    const storyText=scene.lifeScene?`<div class="play-story-text play-life-prose">${body}</div>`:`<p class="play-story-text">${body}</p>`;
-    return `<article class="play-story${scene.lifeScene?' play-life-scene':''}" ${scene.lifeScene?'data-life-scene':''} aria-labelledby="play-scene-title">${sceneBanner(s,lang,previousYear,scene)}<div class="play-story-body"><div class="play-story-meta${loc(scene.kicker,'en').includes('Research notebook')?' play-standard-meta':''}"><span class="play-mark">${translated(scene.kicker,lang)}</span></div>
+    const liChapter=scene.id.startsWith('li-');
+    const body=scene.lifeScene?loc(scene.body,lang).split(/\n(?:\s*\n)?/).filter(Boolean).map((line,i)=>`<p${liChapter?` style="--prose-line:${i}"`:''}>${narrative(line,lang)}</p>`).join(''):narrative(scene.body,lang);
+    const sound=scene.sound&&SceneSound.supported?`<button type="button" class="play-btn" data-play="sceneSound">${a('播放环境声','Play ambience')}</button>`:'';
+    const storyText=scene.lifeScene?`<div class="play-story-text play-life-prose${liChapter?' play-li-prose':''}">${body}</div>`:`<p class="play-story-text">${body}</p>`;
+    return `<article class="play-story${scene.lifeScene?' play-life-scene':''}" ${scene.lifeScene?'data-life-scene':''} aria-labelledby="play-scene-title">${sceneBanner(s,lang,previousYear,scene)}<div class="play-story-body"><div class="play-story-meta${loc(scene.kicker,'en').includes('Research notebook')?' play-standard-meta':''}"><span class="play-mark">${translated(scene.kicker,lang)}</span>${sound}</div>
       <h2 id="play-scene-title" tabindex="-1">${translated(scene.title,lang)}</h2>${storyText}${reviewList(scene,lang)}${dice}${resource}${pressure.warnings}
       <div class="play-choices" aria-label="${a('选择下一步','Choose your next action')}">${choices}</div>${pressure.other}${projectNotes(scene.projectInfo,lang)}${sceneGlossary(scene,s,lang)}</div></article>`;
   }
@@ -41067,7 +41356,7 @@ globalThis.Previous = (() => {
       });
     }
     function focusNext(){const el=container.querySelector('.play-term-change')||container.querySelector('.play-end,.play-receipt,#play-scene-title');if(!el)return;el.focus({preventScroll:true});const r=el.getBoundingClientRect();if(r.top<0||r.top>window.innerHeight*.55)el.scrollIntoView({block:'start'});}
-    function decide(c,result){if(locked)return;locked=true;const before=s.year;sim.choose(s,c.id,result);o.commit?.(s);render(container,s,o,before!==s.year?before:undefined);focusNext();}
+    function decide(c,result){if(locked)return;locked=true;SceneSound.stop();const before=s.year;sim.choose(s,c.id,result);o.commit?.(s);render(container,s,o,before!==s.year?before:undefined);focusNext();}
     container.onclick=e=>{
       const button=e.target.closest('button');if(!button||!container.contains(button))return;
       if(button.hasAttribute('data-choice')){
@@ -41076,7 +41365,12 @@ globalThis.Previous = (() => {
         return;
       }
       const action=button.dataset.play;
-      if(['journal','stats','papers','gates','life','study'].includes(action))notebook(s,o,action,button.dataset.stat);
+      if(action==='sceneSound'&&scene?.sound){
+        if(SceneSound.playing){SceneSound.stop();return;}
+        button.textContent=a('停止环境声','Stop ambience');
+        SceneSound.play(scene.sound,()=>{button.textContent=a('播放环境声','Play ambience');});
+      }
+      else if(['journal','stats','papers','gates','life','study'].includes(action))notebook(s,o,action,button.dataset.stat);
       else if(action==='storyView'){
         storyView=!storyView;
         try{localStorage.setItem('grad-sim.story-view',storyView?'on':'off');}catch{}
